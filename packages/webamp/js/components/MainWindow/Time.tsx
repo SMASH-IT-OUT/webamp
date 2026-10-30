@@ -16,7 +16,12 @@ const Time = memo(() => {
 
   const timeObj = Utils.getTimeObj(seconds);
   return (
-    <div id="time" onClick={toggleTimeMode} className="countdown">
+    <div
+      id="time"
+      onClick={toggleTimeMode}
+      className="countdown"
+      title={Utils.getTimeStr(Math.max(0, seconds))}
+    >
       {timeMode === TIME_MODE.REMAINING && <div id="minus-sign" />}
       <div
         id="minute-first-digit"
