@@ -35,18 +35,23 @@ export const getTimeObj = (time: number | null): Time => {
       secondsSecondDigit: " ",
     };
   }
-  const minutes = Math.floor(time / 60);
-  const seconds = time % 60;
+  // The skin has four digit slots (MM:SS). From one hour on they show H:MM
+  // (hours, minutes) instead: 100+ minutes has no sprite for its first digit,
+  // and 61:30 reads wrong to anyone used to clocks. A negative time (the
+  // remaining time of a track whose duration is not known yet) shows 00:00.
+  const t = Math.max(0, Math.floor(time));
+  const hours = Math.floor(t / 3600);
+  const [big, small] =
+    hours > 0
+      ? [Math.min(hours, 99), Math.floor(t / 60) % 60]
+      : [Math.floor(t / 60), t % 60];
 
-  const digits =
-    time == null
-      ? [" ", " ", " ", " "]
-      : [
-          String(Math.floor(minutes / 10)),
-          String(Math.floor(minutes % 10)),
-          String(Math.floor(seconds / 10)),
-          String(Math.floor(seconds % 10)),
-        ];
+  const digits = [
+    String(Math.floor(big / 10)),
+    String(big % 10),
+    String(Math.floor(small / 10)),
+    String(small % 10),
+  ];
 
   const [
     minutesFirstDigit,
@@ -70,20 +75,16 @@ export const getTimeStr = (
   if (time == null) {
     return "";
   }
-  const {
-    minutesFirstDigit,
-    minutesSecondDigit,
-    secondsFirstDigit,
-    secondsSecondDigit,
-  } = getTimeObj(time);
-
-  return [
-    truncate && minutesFirstDigit === "0" ? "" : minutesFirstDigit,
-    minutesSecondDigit,
-    ":",
-    secondsFirstDigit,
-    secondsSecondDigit,
-  ].join("");
+  const t = Math.max(0, Math.floor(time));
+  const hours = Math.floor(t / 3600);
+  const minutes = Math.floor(t / 60) % 60;
+  const seconds = String(t % 60).padStart(2, "0");
+  // H:MM:SS from one hour on (a two-hour mix is 2:00:00, not 120:00).
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, "0")}:${seconds}`;
+  }
+  const mm = String(minutes);
+  return `${truncate ? mm : mm.padStart(2, "0")}:${seconds}`;
 };
 
 export const parseViscolors = (text: string): string[] => {

@@ -28,6 +28,37 @@ describe("getTimeObj", () => {
     };
     expect(actual).toEqual(expected);
   });
+  it("shows hours and minutes from one hour on", () => {
+    // 1:05:30 -> 01:05; 2:10:00 has no "12" sprite as minutes.
+    expect(getTimeObj(3930)).toEqual({
+      minutesFirstDigit: "0",
+      minutesSecondDigit: "1",
+      secondsFirstDigit: "0",
+      secondsSecondDigit: "5",
+    });
+    expect(getTimeObj(7800)).toEqual({
+      minutesFirstDigit: "0",
+      minutesSecondDigit: "2",
+      secondsFirstDigit: "1",
+      secondsSecondDigit: "0",
+    });
+  });
+  it("keeps minutes and seconds just under an hour", () => {
+    expect(getTimeObj(3599.9)).toEqual({
+      minutesFirstDigit: "5",
+      minutesSecondDigit: "9",
+      secondsFirstDigit: "5",
+      secondsSecondDigit: "9",
+    });
+  });
+  it("shows a negative time as zero", () => {
+    expect(getTimeObj(-12)).toEqual({
+      minutesFirstDigit: "0",
+      minutesSecondDigit: "0",
+      secondsFirstDigit: "0",
+      secondsSecondDigit: "0",
+    });
+  });
 });
 
 describe("getTimeStr", () => {
@@ -41,10 +72,13 @@ describe("getTimeStr", () => {
     const expected = "0:05";
     expect(actual).toEqual(expected);
   });
-  it("truncates extra minutes", () => {
-    const actual = getTimeStr(540000);
-    const expected = "9000:00";
-    expect(actual).toEqual(expected);
+  it("keeps the leading zero when not truncating", () => {
+    expect(getTimeStr(330, false)).toEqual("05:30");
+  });
+  it("shows hours from one hour on", () => {
+    expect(getTimeStr(3600)).toEqual("1:00:00");
+    expect(getTimeStr(7805)).toEqual("2:10:05");
+    expect(getTimeStr(540000)).toEqual("150:00:00");
   });
 });
 
